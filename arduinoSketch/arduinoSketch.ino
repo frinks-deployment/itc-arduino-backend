@@ -6,6 +6,7 @@
 #include <Arduino.h>
 
 #define outputA 3
+#define outputB 2
 
 IPAddress ip(192, 168, 69, 100);                   // Static IP address
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xAA}; // MAC address of your Arduino
@@ -50,13 +51,22 @@ void loop() {
     connectToServer();
   }
 
+  if (client.connected() && client.available()) {
+    // Data is available from the server
+    // Read and process data here if needed
+
+    // In this case, you're sending data from Arduino to Node.js,
+    // so you may not need to handle incoming data from the server in the loop.
+  }
+
   // Check the encoder state when the client is connected
   if (client.connected()) {
     aState = digitalRead(outputA); // Reads the "current" state of the outputA
     // If the previous and the current state of outputA are different, that means a Pulse has occurred
     if (aState != aLastState) {
       // If the outputB state is different from the outputA state, that means the encoder is rotating clockwise
-      if (digitalRead(outputA) != aState) {
+      if (digitalRead(outputB) != aState) {
+        Serial.println("Rotated clockwise!");
         // Here, you can send a message to the Node.js server if needed
         client.println("rotated clockwise!");
       }
