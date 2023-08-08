@@ -32,7 +32,11 @@ server.on('connection', socket => {
   // Handle incoming data from the client
   socket.on('data', data => {
     console.log(`Received data from client: ${data}`);
-    axios.put('/api/transaction/arduino-ping', {});
+    try {
+      axios.put('/api/transaction/arduino-ping', {});
+    } catch (error) {
+      console.error("Unable to ping server from arduino");
+    }
   });
 
   // Handle client disconnection

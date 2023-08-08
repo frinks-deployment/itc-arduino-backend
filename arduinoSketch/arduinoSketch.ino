@@ -6,9 +6,8 @@
 #include <Arduino.h>
 
 #define outputA 3
-#define outputB 2
 
-IPAddress ip(192, 168, 1, 100);                   // Static IP address
+IPAddress ip(192, 168, 69, 100);                   // Static IP address
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xAA}; // MAC address of your Arduino
 
 int aState;
@@ -16,8 +15,8 @@ int aLastState;
 
 int serverPort = 1234;                             // Port number of the server
 
-IPAddress serverIP(192, 168, 1, 200);             // IP address of the server
-IPAddress gateway(192, 168, 1, 1);                // Gateway IP address
+IPAddress serverIP(192, 168, 69, 150);             // IP address of the server
+IPAddress gateway(192, 168, 69, 1);                // Gateway IP address
 IPAddress subnet(255, 255, 255, 0);                // Subnet mask
 
 EthernetClient client;
@@ -33,34 +32,16 @@ void setup() {
   // Connect to the server
   connectToServer();
 
-  pinMode (outputA,INPUT);
-  pinMode (outputB,INPUT);
+  pinMode (outputA, INPUT);
+  pinMode (outputB, INPUT);
   
   Serial.begin (9600);
   // Reads the initial state of the outputA
   aLastState = digitalRead(outputA);
 } 
 
-void loop() { 
-  if (client.connected())
-  {
-    // Client is connected
-    if (client.available())
-    {
-      aState = digitalRead(outputA); // Reads the "current" state of the outputA
-      // If the previous and the current state of the outputA are different, that means a Pulse has occured
-      if (aState != aLastState){     
-        // If the outputB state is different to the outputA state, that means the encoder is rotating clockwise
-        if (digitalRead(outputB) != aState) {
-          Serial.print("Rotated:");
-          client.println("rotated");
-        }
-      } 
-      aLastState = aState; // Updates the previous state of the outputA with the current state
-    }
-  }
-  else
-  {
+void loop() {
+  if (!client.connected()) {
     // Client is disconnected
     Serial.println();
     Serial.println("Server disconnected!");
@@ -68,18 +49,28 @@ void loop() {
     // Attempt to reconnect to the server
     connectToServer();
   }
+
+  // Check the encoder state when the client is connected
+  if (client.connected()) {
+    aState = digitalRead(outputA); // Reads the "current" state of the outputA
+    // If the previous and the current state of outputA are different, that means a Pulse has occurred
+    if (aState != aLastState) {
+      // If the outputB state is different from the outputA state, that means the encoder is rotating clockwise
+      if (digitalRead(outputA) != aState) {
+        // Here, you can send a message to the Node.js server if needed
+        client.println("rotated clockwise!");
+      }
+    }
+    aLastState = aState; // Updates the previous state of outputA with the current state
+  }
 }
 
-void connectToServer()
-{
+void connectToServer() {
   Serial.println("Connecting to server...");
   // Connect to the server
-  if (client.connect(serverIP, serverPort))
-  {
+  if (client.connect(serverIP, serverPort)) {
     Serial.println("Connected!");
-  }
-  else
-  {
+  } else {
     Serial.println("Connection failed!");
     // Retry connection after a delay
     delay(1000);
