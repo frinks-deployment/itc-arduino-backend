@@ -7,6 +7,7 @@
 
 #define outputA 3
 #define outputB 2
+#define BELT_ID "Belt-1"
 
 IPAddress ip(192, 168, 69, 100);                   // Static IP address
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xAA}; // MAC address of your Arduino
@@ -68,7 +69,7 @@ void loop() {
       if (digitalRead(outputB) != aState) {
         Serial.println("Rotated clockwise!");
         // Here, you can send a message to the Node.js server if needed
-        client.println("rotated clockwise!");
+        client.println(BELT_ID);
       }
     }
     aLastState = aState; // Updates the previous state of outputA with the current state
