@@ -68,6 +68,7 @@ void loop() {
       // If the outputB state is different from the outputA state, that means the encoder is rotating clockwise
       if (digitalRead(outputB) != aState) {
         Serial.println("Rotated clockwise!");
+        Serial.println(BELT_ID);
         // Here, you can send a message to the Node.js server if needed
         client.println(BELT_ID);
       }
