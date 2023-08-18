@@ -32,6 +32,7 @@ server.on('connection', socket => {
   // Handle incoming data from the client
   socket.on('data', data => {
     try {
+      console.log("PING");
       axios.put(`${process.env.SERVER_IP}/api/transaction/arduino-ping`, {
         belt_id: data.toString()
       });
