@@ -23,6 +23,8 @@ const server = net.createServer();
 // Track connected clients
 const clients = [];
 
+let currentPingCount = 0;
+
 // Handle new client connections
 server.on('connection', socket => {
   // Add the client socket to the list
@@ -32,10 +34,11 @@ server.on('connection', socket => {
   // Handle incoming data from the client
   socket.on('data', data => {
     try {
-      console.log("PING");
-      axios.put(`${process.env.SERVER_IP}/api/transaction/arduino-ping`, {
-        belt_id: data.toString()
-      });
+      currentPingCount += 1;
+      console.log(currentPingCount);
+      // axios.put(`${process.env.SERVER_IP}/api/transaction/arduino-ping`, {
+      //   belt_id: data.toString()
+      // });
     } catch (error) {
       console.error("Unable to ping server from arduino");
     }

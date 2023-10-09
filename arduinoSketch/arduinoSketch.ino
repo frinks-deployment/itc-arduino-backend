@@ -1,27 +1,30 @@
 #include <SPI.h>
 #include <TimerOne.h>
 #include <Ethernet.h>
-#include "SystemFont5x7.h"
-#include "Arial_black_16.h"
 #include <Arduino.h>
+#include <Encoder.h>
 
-#define outputA 3
-#define outputB 2
 #define BELT_ID "Belt-1"
 
 IPAddress ip(192, 168, 69, 100);                   // Static IP address
 byte mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xAA}; // MAC address of your Arduino
 
-int aState;
-int aLastState;
+// Define the pins connected to the encoder
+const int encoderPinA = 2;
+const int encoderPinB = 3;
 
 int serverPort = 1234;                             // Port number of the server
-
 IPAddress serverIP(192, 168, 69, 150);             // IP address of the server
 IPAddress gateway(192, 168, 69, 1);                // Gateway IP address
 IPAddress subnet(255, 255, 255, 0);                // Subnet mask
 
+// Create an encoder object
+Encoder myEncoder(encoderPinA, encoderPinB);
+
+// Initialize ethernet client
 EthernetClient client;
+
+int counter = 0;
 
 void setup() {
   // Initialize Ethernet library
@@ -33,14 +36,13 @@ void setup() {
   Serial.println("Connecting to server...");
   // Connect to the server
   connectToServer();
+  // Set the encoder pins as inputs
+  pinMode(encoderPinA, INPUT);
+  pinMode(encoderPinB, INPUT);
 
-  pinMode (outputA, INPUT);
-  pinMode (outputB, INPUT);
-  
-  Serial.begin (9600);
-  // Reads the initial state of the outputA
-  aLastState = digitalRead(outputA);
-} 
+  // Start the serial monitor
+  Serial.begin(9600);
+}
 
 void loop() {
   if (!client.connected()) {
@@ -51,27 +53,16 @@ void loop() {
     // Attempt to reconnect to the server
     connectToServer();
   }
+  // Read the encoder value
+  int encoderValue = myEncoder.read();
 
-  if (client.connected() && client.available()) {
-    // Data is available from the server
-    // Read and process data here if needed
-
-    // In this case, you're sending data from Arduino to Node.js,
-    // so you may not need to handle incoming data from the server in the loop.
-  }
-
-  // Check the encoder state when the client is connected
   if (client.connected()) {
-    aState = digitalRead(outputA); // Reads the "current" state of the outputA
-    // If the previous and the current state of outputA are different, that means a Pulse has occurred
-    if (aState != aLastState) {
-      // If the outputB state is different from the outputA state, that means the encoder is rotating clockwise
-      if (digitalRead(outputB) != aState) {
-        // Here, you can send a message to the Node.js server if needed
-        client.print(BELT_ID);
-      }
+    // Check if the encoder value has changed
+    if (encoderValue != counter) {
+      // Update the counter
+      // Send the counter value to server
+      client.print(BELT_ID);
     }
-    aLastState = aState; // Updates the previous state of outputA with the current state
   }
 }
 
